@@ -1,24 +1,22 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { graphql, gql } from "../common";
 
-export default class CreateChunk extends Component {
+export default class CreateStack extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      chunk_name: "",
-      chunk_default_language: "",
-      chunk_created: ""
+      stack_name: "",
+      stack_default_language: ""
     };
-    this.onChangeChunkName = this.onChangeChunkName.bind(this);
+    this.onChangeStackName = this.onChangeStackName.bind(this);
     this.onChangeDefaultLanguage = this.onChangeDefaultLanguage.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  onChangeChunkName(e) {
+  onChangeStackName(e) {
     this.setState({
-      chunk_name: e.target.value
+      stack_name: e.target.value
     });
   }
 
@@ -32,21 +30,41 @@ export default class CreateChunk extends Component {
     e.preventDefault();
 
     console.log(`Form submitted:`);
-    console.log(`Chunk Created: ${this.state.chunk_name}`);
+    console.log(`Stack Created: ${this.state.stack_name}`);
 
-    const newChunk = {
-      chunk_name: this.state.chunk_name,
-      chunk_default_language: this.state.chunk_default_language
+    const newStack = {
+      stack_name: this.state.stack_name,
+      stack_description: this.state.stack_description,
+      stack_default_language: this.state.stack_default_language
     };
 
-    axios
-      .post("http://localhost:4000/chunks/add", newChunk)
-      .then(res => console.log(res.data));
+    graphql
+      .mutate({
+        mutation: gql`
+          {
+            createStack(${newStack}) {
+              name
+              description
+              defaultLanguage
+            }
+          }
+        `
+      })
+      .then(response => {
+        console.log(response);
+        this.setState({
+          stack_description: response.data.stack_description,
+          stack_default_language: response.data.stack_default_language
+        });
+      });
+
+    // axios
+    //   .post("http://localhost:4000/stacks/add", newStack)
+    //   .then(res => console.log(res.data));
 
     this.setState({
-      chunk_name: "",
-      chunk_default_language: "",
-      chunk_created: ""
+      stack_name: "",
+      stack_default_language: ""
     });
 
     this.props.history.push("/");
@@ -55,69 +73,39 @@ export default class CreateChunk extends Component {
   render() {
     return (
       <div style={{ marginTop: 10 }}>
-        <h3>Create New Todo</h3>
+        <h3>Create New Stack</h3>
         <form onSubmit={this.onSubmit}>
+          <div className="form-group">
+            <label>Name: </label>
+            <input
+              type="text"
+              className="form-control"
+              value={this.state.stack_name}
+              onChange={this.onChangeName}
+            />
+          </div>
           <div className="form-group">
             <label>Description: </label>
             <input
               type="text"
               className="form-control"
-              value={this.state.todo_description}
-              onChange={this.onChangeTodoDescription}
+              value={this.state.stack_description}
+              onChange={this.onChangeDescription}
             />
           </div>
           <div className="form-group">
-            <label>Responsible: </label>
+            <label>Defalt Language: </label>
             <input
               type="text"
               className="form-control"
-              value={this.state.todo_responsible}
-              onChange={this.onChangeTodoResponsible}
+              value={this.state.stack_default_language}
+              onChange={this.onChangeDefaultLanguage}
             />
           </div>
           <div className="form-group">
-            <div className="form-check form-check-inline">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="priorityOptions"
-                id="priorityLow"
-                value="Low"
-                checked={this.state.todo_priority === "Low"}
-                onChange={this.onChangeTodoPriority}
-              />
-              <label className="form-check-label">Low</label>
-            </div>
-            <div className="form-check form-check-inline">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="priorityOptions"
-                id="priorityMedium"
-                value="Medium"
-                checked={this.state.todo_priority === "Medium"}
-                onChange={this.onChangeTodoPriority}
-              />
-              <label className="form-check-label">Medium</label>
-            </div>
-            <div className="form-check form-check-inline">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="priorityOptions"
-                id="priorityHigh"
-                value="High"
-                checked={this.state.todo_priority === "High"}
-                onChange={this.onChangeTodoPriority}
-              />
-              <label className="form-check-label">High</label>
-            </div>
-          </div>
-
-          <div className="form-group">
             <input
               type="submit"
-              value="Create Todo"
+              value="Create Stack"
               className="btn btn-primary"
             />
           </div>

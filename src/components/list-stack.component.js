@@ -1,14 +1,17 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import { graphql, gql } from "../common";
 
 const Stack = props => (
   <tr>
-    <td>{props.stack.stack_name}</td>
-    <td>{props.stack.stack_created}</td>
-    <td>{props.stack.stack_default_language}</td>
+    <td>{props.stack.name}</td>
+    <td>{props.stack.description}</td>
+    <td>{props.stack.default_language}</td>
     <td>
-      <Link to={"/stack/edit/" + props.todo._id}>Edit</Link>
+      <Link to={"/stack/" + props.stack.id}>View</Link>
+    </td>
+    <td>
+      <Link to={"/stack/edit/" + props.stack.id}>Edit</Link>
     </td>
   </tr>
 );
@@ -27,7 +30,10 @@ export default class StacksList extends Component {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Action</th>
+              <th>Description</th>
+              <th>Default Language</th>
+              <th />
+              <th />
             </tr>
           </thead>
           <tbody>{this.stacksList()}</tbody>
@@ -38,18 +44,28 @@ export default class StacksList extends Component {
 
   stacksList() {
     return this.state.stacks.map(function(c, i) {
+      console.log(c);
       return <Stack stack={c} key={i} />;
     });
   }
 
   componentDidMount() {
-    axios
-      .get("http://localhost:4000/stacks/")
-      .then(response => {
-        this.setState({ stacks: response.data });
+    graphql
+      .query({
+        query: gql`
+          {
+            stacks {
+              id
+              name
+              description
+              defaultLanguage
+            }
+          }
+        `
       })
-      .catch(function(error) {
-        console.log(error);
+      .then(result => {
+        console.log(result.data.stacks);
+        this.setState({ stacks: result.data.stacks });
       });
   }
 }
